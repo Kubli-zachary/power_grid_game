@@ -1,91 +1,88 @@
-export type WeatherState = 'clear' | 'cloudy' | 'rain' | 'storm'
-
 export class World {
-	private totalHours: number
-	private timeOfDayHours: number
-	private readonly dayLengthHours: number
-	private readonly weatherCycleHours: number
-	private readonly weatherStates: WeatherState[]
-	private readonly dayStartHour: number
-	private readonly nightStartHour: number
+	private totalMinutes: number
+	private timeOfDayMinutes: number
+	private readonly dayLengthMinutes: number
+	private readonly weatherCycleMinutes: number
+	private readonly dayStartMinute: number
+	private readonly nightStartMinute: number
+
+	private current_cloud: number
+	private current_wind: number
+	
+	private readonly wind_change_rate: number
+	private readonly cloud_change_rate: number
 
 	constructor(options?: {
-		startHour?: number
-		dayLengthHours?: number
-		weatherCycleHours?: number
-		weatherStates?: WeatherState[]
-		dayStartHour?: number
-		nightStartHour?: number
+		startMinute?: number
+		dayLengthMinutes?: number
+		weatherCycleMinutes?: number
+		dayStartMinute?: number
+		nightStartMinute?: number
 	}) {
-		const startHour = options?.startHour ?? 6
-		this.dayLengthHours = options?.dayLengthHours ?? 24
-		this.weatherCycleHours = options?.weatherCycleHours ?? 12
-		this.weatherStates = options?.weatherStates ?? ['clear', 'cloudy', 'rain', 'storm']
-		this.dayStartHour = options?.dayStartHour ?? 6
-		this.nightStartHour = options?.nightStartHour ?? 18
+		const startMinute = options?.startMinute ?? 360
+		this.dayLengthMinutes = options?.dayLengthMinutes ?? 1440
+		this.weatherCycleMinutes = options?.weatherCycleMinutes ?? 720
+		this.dayStartMinute = options?.dayStartMinute ?? 360
+		this.nightStartMinute = options?.nightStartMinute ?? 1080
+		this.totalMinutes = 0
+		this.timeOfDayMinutes = this.normalizeMinute(startMinute)
 
-		this.totalHours = 0
-		this.timeOfDayHours = this.normalizeHour(startHour)
+		this.current_cloud = Math.random()
+		this.current_wind = Math.random()
+
+		this.wind_change_rate = 0.01
+		this.cloud_change_rate = 0.01
 	}
 
-	tick(hours: number): void {
-		if (Number.isNaN(hours) || !Number.isFinite(hours)) {
+	advanceTime(minutes: number): void {
+		if (Number.isNaN(minutes) || !Number.isFinite(minutes)) {
 			return
 		}
+		this.totalMinutes += minutes
+		this.timeOfDayMinutes = this.normalizeMinute(this.timeOfDayMinutes + minutes)
 
-		this.totalHours += hours
-		this.timeOfDayHours = this.normalizeHour(this.timeOfDayHours + hours)
+		this.current_cloud = math.random() * this.cloud_change_rate + this.current_cloud * (1 - this.cloud_change_rate)
+		this.current_wind = math.random() * this.wind_change_rate + this.current_wind * (1 - this.wind_change_rate)
+
+		this.current_cloud = Math.max(0, Math.min(1, this.current_cloud))
+		this.current_wind = Math.max(0, Math.min(1, this.current_wind))
 	}
 
-	getTimeOfDayHours(): number {
-		return this.timeOfDayHours
+	getTimeOfDayMinutes(): number {
+		return this.timeOfDayMinutes
 	}
 
 	isDaytime(): boolean {
-		if (this.dayStartHour < this.nightStartHour) {
-			return this.timeOfDayHours >= this.dayStartHour && this.timeOfDayHours < this.nightStartHour
+		if (this.dayStartMinute < this.nightStartMinute) {
+			return this.timeOfDayMinutes >= this.dayStartMinute && this.timeOfDayMinutes < this.nightStartMinute
 		}
-
-		return this.timeOfDayHours >= this.dayStartHour || this.timeOfDayHours < this.nightStartHour
+		return this.timeOfDayMinutes >= this.dayStartMinute || this.timeOfDayMinutes < this.nightStartMinute
 	}
 
 	getDaylightFactor(): number {
-		const hour = this.timeOfDayHours
-		const radians = (Math.PI * 2 * hour) / this.dayLengthHours
-
+		const minute = this.timeOfDayMinutes
+		const radians = (Math.PI * 2 * minute) / this.dayLengthMinutes
 		return Math.max(0, Math.sin(radians))
 	}
 
-	getWeather(): WeatherState {
-		const index = Math.floor(this.totalHours / this.weatherCycleHours) % this.weatherStates.length
-
-		return this.weatherStates[index]
+	getCloudiness(): number {
+		return this.current_cloud
 	}
 
-	getWeatherFactor(): number {
-		const weather = this.getWeather()
-
-		switch (weather) {
-			case 'clear':
-				return 1
-			case 'cloudy':
-				return 0.75
-			case 'rain':
-				return 0.55
-			case 'storm':
-				return 0.35
-			default:
-				return 1
-		}
+	getWindiness(): number {
+		return this.current_wind
 	}
 
-	private normalizeHour(hours: number): number {
-		const length = this.dayLengthHours
-		const mod = hours % length
+	private smoothNoise(t: number, offset: number): number {
+		const phase = t + offset
+		const base = Math.sin(phase * Math.PI * 2) * 0.5 + 0.5
+		const detail = Math.sin(phase * Math.PI * 8) * 0.2
+		return Math.max(0, Math.min(1, base + detail))
+	}
 
+	private normalizeMinute(minutes: number): number {
+		const length = this.dayLengthMinutes
+		const mod = minutes % length
 		return mod < 0 ? mod + length : mod
 	}
 }
-
-
-
