@@ -40,5 +40,13 @@ class GameLogic {
         for (const powerSource of this.powerSources.values()) {
             powerSource.updateProduction(deltaTime, this.world);
         }
-        
+    }
+
+    setPowerSourceAllocation(sourceName: string, allocationMw: number) {
+        // "solar" "wind" "gas" "battery"
+    }
+
+    getPowerSourceProduced(sourceName: string): number {
+        // "solar" "wind" "gas" "battery" number can be negative for battery if it is charging
+    }
 }
