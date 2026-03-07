@@ -22,31 +22,79 @@
     ///  is 30 MW produced or .75 * 30 MW produced
 
 import { World } from "./world";
-import { PowerSource } from "./power_sources/power_source";
-import { Solar } from "./power_sources/solar";
+
+type PowerSourceKey = "solar" | "wind" | "gas" | "battery";
+type PowerState = {
+    allocationMw: number;
+    producedMw: number;
+    maxCapacityMw: number;
+    costPerMw: number;
+};
 
 
 class GameLogic {
     world: World;
-    powerSources: Map<string, PowerSource>;
+    powerSources: Map<PowerSourceKey, PowerState>;
 
     constructor(world: World) {
         this.world = world;
-        this.powerSources = new Map();
+        this.powerSources = new Map<PowerSourceKey, PowerState>([
+            ["solar", { allocationMw: 0, producedMw: 0, maxCapacityMw: 900, costPerMw: 15 }],
+            ["wind", { allocationMw: 0, producedMw: 0, maxCapacityMw: 800, costPerMw: 22 }],
+            ["gas", { allocationMw: 0, producedMw: 0, maxCapacityMw: 1000, costPerMw: 85 }],
+            ["battery", { allocationMw: 0, producedMw: 0, maxCapacityMw: 600, costPerMw: 45 }],
+        ]);
     }
 
     advanceTime(deltaTime: number) {
         this.world.advanceTime(deltaTime);
-        for (const powerSource of this.powerSources.values()) {
-            powerSource.updateProduction(deltaTime, this.world);
+        for (const [key, source] of this.powerSources.entries()) {
+            const next = this.calculateProducedMw(key, source.allocationMw);
+            source.producedMw = next;
         }
     }
 
     setPowerSourceAllocation(sourceName: string, allocationMw: number) {
-        // "solar" "wind" "gas" "battery"
+        const key = sourceName as PowerSourceKey;
+        const source = this.powerSources.get(key);
+        if (!source) {
+            return;
+        }
+        const clamped = Math.max(0, Math.min(allocationMw, source.maxCapacityMw));
+        source.allocationMw = clamped;
+        source.producedMw = this.calculateProducedMw(key, clamped);
     }
 
     getPowerSourceProduced(sourceName: string): number {
-        // "solar" "wind" "gas" "battery" number can be negative for battery if it is charging
+        const source = this.powerSources.get(sourceName as PowerSourceKey);
+        return source ? source.producedMw : 0;
+    }
+
+    getPowerSourceMaxCapacity(sourceName: string): number {
+        const source = this.powerSources.get(sourceName as PowerSourceKey);
+        return source ? source.maxCapacityMw : 0;
+    }
+
+    getPowerSourceCost(sourceName: string): number {
+        const source = this.powerSources.get(sourceName as PowerSourceKey);
+        return source ? source.costPerMw : 0;
+    }
+
+    private calculateProducedMw(sourceName: PowerSourceKey, allocationMw: number): number {
+        // Dummy values until the full simulation is wired in.
+        switch (sourceName) {
+            case "solar":
+                return allocationMw * 0.75;
+            case "wind":
+                return allocationMw * 0.6;
+            case "gas":
+                return allocationMw * 0.9;
+            case "battery":
+                return allocationMw * 0.5;
+            default:
+                return 0;
+        }
     }
 }
+
+export { GameLogic };

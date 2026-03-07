@@ -25,6 +25,10 @@ export abstract class PowerSource {
 		return this.allocatedMw
 	}
 
+	getMaxCapacity(): number {
+		return this.maxCapacityMw
+	}
+
 	getCost(): number {
 		return this.allocatedMw * this.costPerMw
 	}
