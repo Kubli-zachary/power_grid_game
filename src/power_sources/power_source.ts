@@ -12,8 +12,7 @@ export abstract class PowerSource {
 		this.maxCapacityMw = maxCapacityMw
 		this.costPerMw = costPerMw
 		this.allocatedMw = 0
-		this.inputMw
- = 0
+		this.inputMw = 0
 	}
 
 	setAllocMw(mw: number): void {
@@ -34,9 +33,7 @@ export abstract class PowerSource {
 	}
 
 	getProduction(): number {
-		return Math.max(this.allocatedMw, this.inputMw
-	
-		)
+		return Math.max(0, Math.min(this.allocatedMw, this.inputMw))
 	}
 
 	abstract updateProduction(deltaTime: number, world: World): number

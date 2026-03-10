@@ -3,7 +3,7 @@ import { World } from '../world'
 
 export class Gas extends PowerSource {
   static MAX_MW: number = 1000
-  static DEFAULT_RAMP_MW_PER_MIN: number = 40
+  static DEFAULT_RAMP_MW_PER_MIN: number = 1
 
   private rampMwPerMinute: number
 
@@ -34,5 +34,9 @@ export class Gas extends PowerSource {
     }
 
     return this.getProduction()
+  }
+
+  getProduction(): number {
+    return Math.max(0, Math.min(this.inputMw, this.maxCapacityMw))
   }
 }

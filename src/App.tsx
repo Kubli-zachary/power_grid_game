@@ -26,8 +26,8 @@ function App() {
   const [batteryUsage, setBatteryUsage] = useState(15)
   const game = useMemo(() => new GameLogic(new World()), [])
 
-  useEffect(() => {
-    const nextOutputs: Record<string, number> = { ...outputs }
+  const refreshOutputs = () => {
+    const nextOutputs: Record<string, number> = {}
     SECTIONS.forEach((section) => {
       const maxMw = game.getPowerSourceMaxCapacity(section.id)
       const allocationMw = (allocations[section.id] / 100) * maxMw
@@ -35,7 +35,16 @@ function App() {
       nextOutputs[section.id] = game.getPowerSourceProduced(section.id)
     })
     setOutputs(nextOutputs)
+  }
+
+  useEffect(() => {
+    refreshOutputs()
   }, [allocations, game])
+
+  const handleAdvanceMinute = () => {
+    game.advanceTime(60)
+    refreshOutputs()
+  }
   const usageValue = batteryUsage >= 0 ? `+${batteryUsage}%` : `${batteryUsage}%`
   const usageAbs = Math.min(Math.abs(batteryUsage), 100)
   const usagePosition = (batteryUsage + 100) / 2
@@ -48,6 +57,9 @@ function App() {
         <p className="subtitle">
           Four dark sections with output and allocation columns.
         </p>
+        <button className="advance-button" onClick={handleAdvanceMinute}>
+          Advance time 1 minute
+        </button>
       </header>
 
       <div className="panel-grid">

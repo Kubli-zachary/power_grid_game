@@ -41,8 +41,8 @@ export class World {
 		this.totalMinutes += minutes
 		this.timeOfDayMinutes = this.normalizeMinute(this.timeOfDayMinutes + minutes)
 
-		this.current_cloud = math.random() * this.cloud_change_rate + this.current_cloud * (1 - this.cloud_change_rate)
-		this.current_wind = math.random() * this.wind_change_rate + this.current_wind * (1 - this.wind_change_rate)
+		this.current_cloud = Math.random() * this.cloud_change_rate + this.current_cloud * (1 - this.cloud_change_rate)
+		this.current_wind = Math.random() * this.wind_change_rate + this.current_wind * (1 - this.wind_change_rate)
 
 		this.current_cloud = Math.max(0, Math.min(1, this.current_cloud))
 		this.current_wind = Math.max(0, Math.min(1, this.current_wind))
